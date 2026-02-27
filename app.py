@@ -2,52 +2,54 @@ import streamlit as st
 import pandas as pd
 import random
 import matplotlib.pyplot as plt
-from collections import Counter
 
-st.set_page_config(page_title="三星彩分析大師", layout="wide")
-st.title("🎰 三星彩數據分析與回測")
+st.set_page_config(page_title="賓果數據分析大師", layout="wide")
+st.title("🎱 BINGO BINGO 賓果賓果數據分析")
 
-# 側邊欄設定
-st.sidebar.header("⚙️ 設定")
-total_periods = st.sidebar.slider("總期數", 500, 5000, 1000)
-test_size = st.sidebar.slider("回測期數", 50, 500, 100)
+# --- 側邊欄設定 ---
+st.sidebar.header("⚙️ 模擬參數")
+periods = st.sidebar.slider("分析期數", 100, 2000, 500)
+pick_num = st.sidebar.selectbox("你想玩幾星？", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
-# 生成模擬數據
-data = [tuple(random.randint(0, 9) for _ in range(3)) for _ in range(total_periods)]
-df = pd.DataFrame(data, columns=['百位', '十位', '個位'])
+# 生成賓果模擬數據 (01-80號，每期開20個)
+data = [random.sample(range(1, 81), 20) for _ in range(periods)]
+all_numbers = [num for sublist in data for num in sublist]
+counts = pd.Series(all_numbers).value_counts().sort_index()
 
-# 統計圖表區
-col1, col2 = st.columns(2)
-with col1:
-    st.subheader("📊 數字頻率")
-    pos = st.selectbox("選擇位置", ['百位', '十位', '個位'])
-    st.bar_chart(df[pos].value_counts())
+# --- 1. 熱門號碼 Top 10 ---
+st.subheader(f"🔥 最近 {periods} 期：最常出現號碼排行榜")
+top_10 = counts.sort_values(ascending=False).head(10)
+cols = st.columns(10)
+for i, (num, count) in enumerate(top_10.items()):
+cols[i].metric(label=f"號碼 {num}", value=f"{count}次")
 
-with col2:
-    st.subheader("📈 和值分佈")
-    sums = df.sum(axis=1)
-    fig, ax = plt.subplots()
-    ax.hist(sums, bins=28, color='gold', edgecolor='black')
-    st.pyplot(fig)
-
-# 回測邏輯區
+# --- 2. 數據分析圖表 ---
 st.divider()
-st.subheader("🧪 策略回測報告")
-train_df = df.iloc[:-test_size]
-test_df = df.iloc[-test_size:]
+col_left, col_right = st.columns(2)
 
-# 找出最常出現的組合
-rec_0 = train_df['百位'].mode()[0]
-rec_1 = train_df['十位'].mode()[0]
-rec_2 = train_df['個位'].mode()[0]
-rec = (rec_0, rec_1, rec_2)
+with col_left:
+st.subheader("📊 01-80 出現頻率")
+fig, ax = plt.subplots()
+ax.bar(counts.index, counts.values, color='skyblue')
+ax.set_xlabel("號碼")
+ax.set_ylabel("次數")
+st.pyplot(fig)
 
-hits = 0
-for row in test_df.itertuples(index=False):
-# 這裡必須往右縮排
-    if tuple(row) == rec:
-        hits += 1
+with col_right:
+st.subheader("⚖️ 奇偶 & 大小分析")
+# 簡單分析最後一期的奇偶
+last_draw = data[-1]
+odds = len([n for n in last_draw if n % 2 != 0])
+evens = 20 - odds
+bigs = len([n for n in last_draw if n > 40])
+smalls = 20 - bigs
 
-st.write(f"💡 推薦組合：**{rec}**")
-st.metric("中獎次數", f"{hits} 次")
+st.write(f"最新一期狀態：")
+st.write(f"• 奇偶數：{odds} 奇 / {evens} 偶")
+st.write(f"• 大小號：{bigs} 大 / {smalls} 小")
+st.info("通常賓果 20 個號碼中，奇偶與大小會趨近於 10:10。")
 
+# --- 3. 系統推薦 ---
+st.divider()
+hot_nums = list(top_10.index[:pick_num])
+st.success(f"💡 根據數據熱度，建議您的 {pick_num} 星推薦組合為：**{sorted(hot_nums)}**")
