@@ -19,16 +19,16 @@ df = pd.DataFrame(data, columns=['百位', '十位', '個位'])
 # 統計圖表區
 col1, col2 = st.columns(2)
 with col1:
-st.subheader("📊 數字頻率")
-pos = st.selectbox("選擇位置", ['百位', '十位', '個位'])
-st.bar_chart(df[pos].value_counts())
+    st.subheader("📊 數字頻率")
+    pos = st.selectbox("選擇位置", ['百位', '十位', '個位'])
+    st.bar_chart(df[pos].value_counts())
 
 with col2:
-st.subheader("📈 和值分佈")
-sums = df.sum(axis=1)
-fig, ax = plt.subplots()
-ax.hist(sums, bins=28, color='gold', edgecolor='black')
-st.pyplot(fig)
+    st.subheader("📈 和值分佈")
+    sums = df.sum(axis=1)
+    fig, ax = plt.subplots()
+    ax.hist(sums, bins=28, color='gold', edgecolor='black')
+    st.pyplot(fig)
 
 # 回測邏輯區
 st.divider()
@@ -44,9 +44,9 @@ rec = (rec_0, rec_1, rec_2)
 
 hits = 0
 for row in test_df.itertuples(index=False):
-# 這裡就是你第二張圖報錯的地方，必須縮排
-        if tuple(row) == rec:
-hits += 1
+# 這裡必須往右縮排
+    if tuple(row) == rec:
+    hits += 1
 
 st.write(f"💡 推薦組合：**{rec}**")
 st.metric("中獎次數", f"{hits} 次")
