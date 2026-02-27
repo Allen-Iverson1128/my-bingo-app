@@ -21,35 +21,36 @@ st.subheader(f"🔥 最近 {periods} 期：最常出現號碼排行榜")
 top_10 = counts.sort_values(ascending=False).head(10)
 cols = st.columns(10)
 for i, (num, count) in enumerate(top_10.items()):
-cols[i].metric(label=f"號碼 {num}", value=f"{count}次")
+    cols[i].metric(label=f"號碼 {num}", value=f"{count}次")
 
 # --- 2. 數據分析圖表 ---
 st.divider()
 col_left, col_right = st.columns(2)
 
 with col_left:
-st.subheader("📊 01-80 出現頻率")
-fig, ax = plt.subplots()
-ax.bar(counts.index, counts.values, color='skyblue')
-ax.set_xlabel("號碼")
-ax.set_ylabel("次數")
-st.pyplot(fig)
+    st.subheader("📊 01-80 出現頻率")
+    fig, ax = plt.subplots()
+    ax.bar(counts.index, counts.values, color='skyblue')
+    ax.set_xlabel("號碼")
+    ax.set_ylabel("次數")
+    st.pyplot(fig)
 
 with col_right:
-st.subheader("⚖️ 奇偶 & 大小分析")
+    st.subheader("⚖️ 奇偶 & 大小分析")
 # 簡單分析最後一期的奇偶
-last_draw = data[-1]
-odds = len([n for n in last_draw if n % 2 != 0])
-evens = 20 - odds
-bigs = len([n for n in last_draw if n > 40])
-smalls = 20 - bigs
+    last_draw = data[-1]
+    odds = len([n for n in last_draw if n % 2 != 0])
+    evens = 20 - odds
+    bigs = len([n for n in last_draw if n > 40])
+    smalls = 20 - bigs
 
-st.write(f"最新一期狀態：")
-st.write(f"• 奇偶數：{odds} 奇 / {evens} 偶")
-st.write(f"• 大小號：{bigs} 大 / {smalls} 小")
-st.info("通常賓果 20 個號碼中，奇偶與大小會趨近於 10:10。")
+    st.write(f"最新一期狀態：")
+    st.write(f"• 奇偶數：{odds} 奇 / {evens} 偶")
+    st.write(f"• 大小號：{bigs} 大 / {smalls} 小")
+    st.info("通常賓果 20 個號碼中，奇偶與大小會趨近於 10:10。")
 
 # --- 3. 系統推薦 ---
 st.divider()
 hot_nums = list(top_10.index[:pick_num])
 st.success(f"💡 根據數據熱度，建議您的 {pick_num} 星推薦組合為：**{sorted(hot_nums)}**")
+
