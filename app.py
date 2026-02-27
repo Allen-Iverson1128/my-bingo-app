@@ -1,4 +1,4 @@
-﻿import streamlit as st
+import streamlit as st
 import pandas as pd
 import random
 import matplotlib.pyplot as plt
@@ -16,32 +16,37 @@ test_size = st.sidebar.slider("回測期數", 50, 500, 100)
 data = [tuple(random.randint(0, 9) for _ in range(3)) for _ in range(total_periods)]
 df = pd.DataFrame(data, columns=['百位', '十位', '個位'])
 
-# 統計圖表
+# 統計圖表區
 col1, col2 = st.columns(2)
 with col1:
-    st.subheader("📊 數字頻率")
-    pos = st.selectbox("選擇位置", ['百位', '十位', '個位'])
-    st.bar_chart(df[pos].value_counts())
+st.subheader("📊 數字頻率")
+pos = st.selectbox("選擇位置", ['百位', '十位', '個位'])
+st.bar_chart(df[pos].value_counts())
 
 with col2:
-    st.subheader("📈 和值分佈")
-    sums = df.sum(axis=1)
-    fig, ax = plt.subplots()
-    ax.hist(sums, bins=28, color='gold', edgecolor='black')
-    st.pyplot(fig)
+st.subheader("📈 和值分佈")
+sums = df.sum(axis=1)
+fig, ax = plt.subplots()
+ax.hist(sums, bins=28, color='gold', edgecolor='black')
+st.pyplot(fig)
 
-# 回測邏輯
+# 回測邏輯區
 st.divider()
 st.subheader("🧪 策略回測報告")
 train_df = df.iloc[:-test_size]
 test_df = df.iloc[-test_size:]
-rec = (train_df['百位'].mode()[0], train_df['十位'].mode()[0], train_df['個位'].mode()[0])
+
+# 找出最常出現的組合
+rec_0 = train_df['百位'].mode()[0]
+rec_1 = train_df['十位'].mode()[0]
+rec_2 = train_df['個位'].mode()[0]
+rec = (rec_0, rec_1, rec_2)
 
 hits = 0
 for row in test_df.itertuples(index=False):
-if tuple(row) == rec:
+# 這裡就是你第二張圖報錯的地方，必須縮排
+        if tuple(row) == rec:
 hits += 1
 
-st.write(f"💡 推薦組合：{rec}")
-
+st.write(f"💡 推薦組合：**{rec}**")
 st.metric("中獎次數", f"{hits} 次")
