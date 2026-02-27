@@ -46,7 +46,8 @@ hits = 0
 for row in test_df.itertuples(index=False):
 # 這裡必須往右縮排
     if tuple(row) == rec:
-    hits += 1
+        hits += 1
 
 st.write(f"💡 推薦組合：**{rec}**")
 st.metric("中獎次數", f"{hits} 次")
+
