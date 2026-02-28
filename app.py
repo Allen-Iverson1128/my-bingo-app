@@ -105,8 +105,8 @@ else:
 st.divider()
 st.subheader("🛡️ 獵人終極過濾器：戰場分析")
 
-# 這裡我們固定檢查一組黃金組合
-test_numbers = sorted(best_4) if len(best_4) == 4 else [21, 32, 42, 59]
+# 把這裡的 best_4 改成 final_4，讓兩個系統對接
+test_numbers = sorted(final_4) if len(final_4) == 4 else [6, 39, 59, 74]
 
 score = 0
 reasons = []
@@ -123,25 +123,26 @@ if bigs == 2:
     score += 25
     reasons.append("✅ 大小 2:2 平衡 (+25分)")
 
-# 3. 尾數
+# 3. 尾數 (這裡因為我們新邏輯已經過濾過，通常是滿分)
 tails = len(set([n % 10 for n in test_numbers]))
-if tails >= 3:
+if tails >= 4:
     score += 25
-    reasons.append(f"✅ 尾數包含 {tails} 種不同組合 (+25分)")
+    reasons.append(f"✅ 尾數完全分散 ({tails}種組合) (+25分)")
+elif tails == 3:
+    score += 15
+    reasons.append(f"⚠️ 尾數稍有重複 ({tails}種組合) (+15分)")
 
 # 4. 遺漏值 (Delta)
 avg_missing = sum([last_occurrence.get(n, 0) for n in test_numbers]) / 4
 if avg_missing >= 2:
     score += 25
-    reasons.append(f"✅ 平均遺漏值 {avg_missing:.1f} 期，具備噴發動能 (+25分)")
+    reasons.append(f"✅ 平均遺漏值 {avg_missing:.1f} 期，動能充足 (+25分)")
 
 # 最終顯示
 st.write(f"### 🎯 當前組合戰力評分： **{score} 分**")
 for r in reasons:
     st.write(r)
 
-if score >= 75:
-    st.success("🔥 結構非常穩定，這組可以打！")
-else:
-    st.warning("⚠️ 結構稍偏，請從排行榜中找『隔較久』的號碼來換。")
-
+if score >= 90:
+    st.balloons()
+    st.success("🔥 這是經過【尾數不重複】過濾的終極組合，建議執行十期計畫！")
