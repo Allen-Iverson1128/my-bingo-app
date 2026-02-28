@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import random
+# 在 import random 下方加入這行，保證每次產生的隨機數都一樣
+random.seed(42)
 import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="賓果獵人獵號系統", layout="wide")
@@ -129,3 +131,4 @@ if score >= 75:
     st.success("🔥 這是一組非常有把握的號碼，建議執行十期計畫！")
 else:
     st.warning("⚠️ 這組號碼結構稍偏，建議調整尾數或遺漏值較高的號碼。")
+
