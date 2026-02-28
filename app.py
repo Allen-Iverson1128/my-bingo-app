@@ -67,26 +67,39 @@ with col_logic:
     st.progress(win_rate / 100)
     st.write("這證明了『2奇2偶』是極高機率的穩定組合。")
 
-# --- 第三區：終極過濾建議 ---
+# --- 第三區：獵人精選 (自動避開重複尾數版) ---
 st.divider()
 st.subheader("🚀 獵人精選：黃金 4 碼建議")
 
-# 自動邏輯：從 Top 10 挑選 2奇2偶 + 2大2小
-best_4 = []
-# 簡單篩選邏輯
-odd_big = [n for n in top_10_idx if n % 2 != 0 and n > 40][:1]
-odd_small = [n for n in top_10_idx if n % 2 != 0 and n <= 40][:1]
-even_big = [n for n in top_10_idx if n % 2 == 0 and n > 40][:1]
-even_small = [n for n in top_10_idx if n % 2 == 0 and n <= 40][:1]
+def get_best_no_repeat_tail(candidates, selected_tails):
+    """從候選清單中找出尾數不重複的最強號碼"""
+    for n in candidates:
+        if n % 10 not in selected_tails:
+            return n
+    return candidates[0] if candidates else None
 
-best_4 = odd_big + odd_small + even_big + even_small
+# 取得 Top 10 並分類
+top_10_list = list(top_10_idx)
+odd_big = [n for n in top_10_list if n % 2 != 0 and n > 40]
+odd_small = [n for n in top_10_list if n % 2 != 0 and n <= 40]
+even_big = [n for n in top_10_list if n % 2 == 0 and n > 40]
+even_small = [n for n in top_10_list if n % 2 == 0 and n <= 40]
 
-if len(best_4) == 4:
-    st.success(f"根據 500 期大數據與遺漏值過濾，建議組合：**{sorted(best_4)}**")
-    st.write("✅ 符合：2 奇 2 偶 / 2 大 2 小 / 高頻率 Top 10")
+final_4 = []
+used_tails = set()
+
+# 按照順序填滿四個籃子，若尾數重複則跳下一個
+for basket in [odd_big, odd_small, even_big, even_small]:
+    pick = get_best_no_repeat_tail(basket, used_tails)
+    if pick:
+        final_4.append(pick)
+        used_tails.add(pick % 10)
+
+if len(final_4) == 4:
+    st.success(f"根據 500 期數據與【尾數不重複】過濾，建議組合：**{sorted(final_4)}**")
+    st.write(f"📌 排除重複尾數後，目前的尾數組合為：{sorted(list(used_tails))}")
 else:
-    st.warning("當前 Top 10 數據過於集中，建議手動從排行榜中挑選符合平衡的號碼。")
-# 在原有程式碼的最後加入這段「獵人評分邏輯」
+    st.warning("數據庫中符合條件的號碼不足，建議手動微調。")
 
 # --- 第三區：獵人評分與過濾系統 ---
 st.divider()
@@ -131,3 +144,4 @@ if score >= 75:
     st.success("🔥 結構非常穩定，這組可以打！")
 else:
     st.warning("⚠️ 結構稍偏，請從排行榜中找『隔較久』的號碼來換。")
+
