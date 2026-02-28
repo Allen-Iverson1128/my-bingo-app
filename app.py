@@ -11,6 +11,8 @@ st.title("🎯 BINGO BINGO 賓果獵人：進階策略版")
 # --- 側邊欄設定 ---
 st.sidebar.header("⚙️ 進階分析設定")
 periods = st.sidebar.slider("分析期數", 100, 2000, 500)
+play_type = st.sidebar.selectbox("選擇投注星數", options=[2, 3, 4], index=2)
+st.sidebar.divider()
 st.sidebar.info("建議設定 500 期以獲得穩定數據。")
 
 # --- 數據模擬與核心計算 ---
@@ -67,47 +69,53 @@ with col_logic:
     st.progress(win_rate / 100)
     st.write("這證明了『2奇2偶』是極高機率的穩定組合。")
 
-# --- 第三區：獵人精選 (自動避開重複尾數版) ---
+# --- 第三區：獵人精選 (自動對接星數) ---
 st.divider()
-st.subheader("🚀 獵人精選：黃金 4 碼建議")
+st.subheader(f"🚀 獵人建議：最強 {play_type} 星組合")
 
-def get_best_no_repeat_tail(candidates, selected_tails):
-    """從候選清單中找出尾數不重複的最強號碼"""
-    for n in candidates:
-        if n % 10 not in selected_tails:
-            return n
-    return candidates[0] if candidates else None
-
-# 取得 Top 10 並分類
+# 1. 取得 Top 10 並分類 (這裡使用你原本的 top_10_idx 變數)
 top_10_list = list(top_10_idx)
-odd_big = [n for n in top_10_list if n % 2 != 0 and n > 40]
-odd_small = [n for n in top_10_list if n % 2 != 0 and n <= 40]
-even_big = [n for n in top_10_list if n % 2 == 0 and n > 40]
-even_small = [n for n in top_10_list if n % 2 == 0 and n <= 40]
+baskets = {
+    "奇大": [n for n in top_10_list if n % 2 != 0 and n > 40],
+    "奇小": [n for n in top_10_list if n % 2 != 0 and n <= 40],
+    "偶大": [n for n in top_10_list if n % 2 == 0 and n > 40],
+    "偶小": [n for n in top_10_list if n % 2 == 0 and n <= 40]
+}
 
-final_4 = []
+# 2. 根據星數抓取最佳組合
+final_4 = [] # 這裡維持叫 final_4 是為了跟下方的評分系統對接
 used_tails = set()
+basket_keys = ["奇大", "奇小", "偶大", "偶小"]
 
-# 按照順序填滿四個籃子，若尾數重複則跳下一個
-for basket in [odd_big, odd_small, even_big, even_small]:
-    pick = get_best_no_repeat_tail(basket, used_tails)
-    if pick:
-        final_4.append(pick)
-        used_tails.add(pick % 10)
+# 按照星數決定要跑幾次循環
+for i in range(play_type):
+    key = basket_keys[i % 4]
+    basket = baskets.get(key, [])
+    
+    # 找尾數不重複的最佳號碼
+    best_pick = None
+    for n in basket:
+        if n % 10 not in used_tails:
+            best_pick = n
+            break
+    
+    # 如果籃子裡都重複尾數，就抓籃子裡的第一名
+    if not best_pick and basket:
+        best_pick = basket[0]
+        
+    if best_pick:
+        final_4.append(best_pick)
+        used_tails.add(best_pick % 10)
 
-if len(final_4) == 4:
-    st.success(f"根據 500 期數據與【尾數不重複】過濾，建議組合：**{sorted(final_4)}**")
-    st.write(f"📌 排除重複尾數後，目前的尾數組合為：{sorted(list(used_tails))}")
-else:
-    st.warning("數據庫中符合條件的號碼不足，建議手動微調。")
+st.success(f"建議執行組合：**{sorted(final_4)}**")
+st.info("💡 若現場 Delta 與 App 不同，請從同屬性籃子中找『現場隔最久』的號碼更換。")
 
 # --- 第三區：獵人評分與過濾系統 ---
 st.divider()
 st.subheader("🛡️ 獵人終極過濾器：戰場分析")
 
 # 把這裡的 best_4 改成 final_4，讓兩個系統對接
-test_numbers = sorted(final_4) if len(final_4) == 4 else [6, 39, 59, 74]
-
+test_numbers = sorted(final_4) if len(final_4) == play_type else [6, 39, 59, 74]
 score = 0
 reasons = []
 
@@ -146,3 +154,4 @@ for r in reasons:
 if score >= 90:
     st.balloons()
     st.success("🔥 這是經過【尾數不重複】過濾的終極組合，建議執行十期計畫！")
+
