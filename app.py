@@ -88,55 +88,46 @@ else:
     st.warning("當前 Top 10 數據過於集中，建議手動從排行榜中挑選符合平衡的號碼。")
 # 在原有程式碼的最後加入這段「獵人評分邏輯」
 
+# --- 第三區：獵人評分與過濾系統 ---
 st.divider()
-st.subheader("🛡️ 獵人終極過濾器：戰前分析")
+st.subheader("🛡️ 獵人終極過濾器：戰場分析")
 
-# 假設這是你選的 4 個號碼 (這裡以自動建議為例，你也可以改成手動輸入)
+# 這裡我們固定檢查一組黃金組合
 test_numbers = sorted(best_4) if len(best_4) == 4 else [21, 32, 42, 59]
 
 score = 0
 reasons = []
 
-# 評分 1：奇偶平衡
+# 1. 奇偶
 odds = len([n for n in test_numbers if n % 2 != 0])
 if odds == 2:
     score += 25
     reasons.append("✅ 奇偶 2:2 平衡 (+25分)")
 
-# 評分 2：大小平衡
+# 2. 大小
 bigs = len([n for n in test_numbers if n > 40])
 if bigs == 2:
     score += 25
     reasons.append("✅ 大小 2:2 平衡 (+25分)")
 
-# 評分 3：尾數分散度
+# 3. 尾數
 tails = len(set([n % 10 for n in test_numbers]))
 if tails >= 3:
     score += 25
     reasons.append(f"✅ 尾數包含 {tails} 種不同組合 (+25分)")
 
-# 評分 4：遺漏值回補
+# 4. 遺漏值 (Delta)
 avg_missing = sum([last_occurrence.get(n, 0) for n in test_numbers]) / 4
-if avg_missing >= 3:
+if avg_missing >= 2:
     score += 25
-    reasons.append(f"✅ 平均遺漏值 {avg_missing:.1f} 期，正值反彈期 (+25分)")
+    reasons.append(f"✅ 平均遺漏值 {avg_missing:.1f} 期，具備噴發動能 (+25分)")
 
-# 顯示評分結果
-st.write(f"### 🎯 這組號碼的戰力評分： **{score} 分**")
+# 最終顯示
+st.write(f"### 🎯 當前組合戰力評分： **{score} 分**")
 for r in reasons:
     st.write(r)
 
 if score >= 75:
-    st.balloons()
-    st.success("🔥 這是一組非常有把握的號碼，建議執行十期計畫！")
+    st.success("🔥 結構非常穩定，這組可以打！")
 else:
-    st.warning("⚠️ 這組號碼結構稍偏，建議調整尾數或遺漏值較高的號碼。")
-刷新你的 App
-
-看 Top 10 中「隔最久沒開」的那 3 個號碼。
-
-再配 1 個「第一名」但「隔 1-2 期」的號碼。
-
-檢查這 4 個是否符合 2奇2偶 / 2大2小。
-
-
+    st.warning("⚠️ 結構稍偏，請從排行榜中找『隔較久』的號碼來換。")
